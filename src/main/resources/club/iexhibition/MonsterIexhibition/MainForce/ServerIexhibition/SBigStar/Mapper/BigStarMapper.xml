@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SBigStar.Mapper.BigStarMapper">
+
+
+    <resultMap id="BigStarShops" type="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SBigStar.Beans.BigStarShop">
+        <result property="id" column="id"></result>
+        <result property="name" column="name"></result>
+        <result property="url" column="url"></result>
+        <result property="description" column="description"></result>
+        <result property="detailsUrl" column="details_url"></result>
+        <result property="bigStarShopClassId" column="big_star_shop_class_id"></result>
+        <result property="bigStarShopClassName" column="shopClassName"></result>
+        <collection property="starShopSpecs" ofType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SBigStar.Beans.BigStarShopSpec" select="findBigStarShopSpecBySid" column="id" javaType="arraylist">
+
+        </collection>
+    </resultMap>
+
+
+
+    <select id="findBigStarByName"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SBigStar.Beans.BigStar">
+        select id, name, introduce from big_star where name=#{name} and status = 1
+    </select>
+    <insert id="addBigStar">
+        insert into big_star(id, name, introduce,avatar ,created_time,s_sort) VALUES (#{bigstar.id},#{bigstar.name},#{bigstar.introduce},#{bigstar.avatar},#{date},#{bigstar.sSort})
+    </insert>
+    <update id="updateBigStar">
+        update big_star set name=#{bigStar.name},avatar=#{bigStar.avatar},introduce=#{bigStar.introduce} where id=#{bigStar.id}
+    </update>
+    <select id="findBigStar"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SBigStar.Beans.BigStar">
+        select id, name, avatar, introduce, created_time,s_sort,types from big_star where status = 1
+        <if test="_parameter != null and _parameter != ''">
+            and (name like "%"#{search}"%" or introduce like "%"#{search}"%")
+        </if>
+    </select>
+    <update id="updateBigStarStatus">
+        update big_star set status=#{status} where id=#{bid}
+    </update>
+    <insert id="addBigStarAlbum">
+        insert into big_star_album(id, big_star_id, url, url_sort, created_time) values (#{id},#{bid},#{url},#{urlSort},#{date})
+    </insert>
+    <update id="updateBigStarAlbum">
+        update big_star_album set url=#{url},url_sort=#{urlSort} where id=#{id}
+    </update>
+    <update id="updateBigStarAlbumStatus">
+        update big_star_album set status=#{status} where id=#{bid}
+    </update>
+    <select id="findBigStarAlbum" resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SBigStar.Beans.BigStarAlbum">
+        select id, big_star_id, url from big_star_album where big_star_id=#{bid} and status = 1 order by url_sort desc
+    </select>
+    <insert id="addBigStarShop">
+        insert into big_star_shop(id, name, url,description,details_url,big_star_shop_class_id,created_time) values (#{id},#{name},#{url},#{description},#{detailsUrl},#{bigStarShopClassId},#{createdTime})
+    </insert>
+    <update id="updateBigStarShop">
+        update big_star_shop set name=#{name},url=#{url},description=#{description},details_url=#{detailsUrl},big_star_shop_class_id=#{bigStarShopClassId} where id=#{id}
+    </update>
+    <update id="updateBigStarShopStatus">
+        update big_star_shop set status=#{status} where id=#{id}
+    </update>
+    <select id="findBigStarById"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SBigStar.Beans.BigStar">
+        select id, name, avatar, introduce,created_time,s_sort,types from big_star where id=#{bid} and status = 1
+    </select>
+    <select id="findBigStarShop"
+            resultMap="BigStarShops">
+        select bss.id, bss.name, bss.url, bss.description, bss.details_url, bss.big_star_shop_class_id,bss.status,bss.created_time,bssc.`name` as shopClassName
+
+        from big_star_shop bss,big_star_shop_class bssc
+
+        where bss.status!= -1 and bss.big_star_shop_class_id=bssc.id and bssc.status = 1
+
+
+        <if test="search != null and search != ''">
+            and (bss.name like "%"#{search}"%" or bssc.name like "%"#{search}"%")
+        </if>
+
+    </select>
+
+    <select id="findBigStarShopClassByName"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SBigStar.Beans.BigStarShopClass">
+        select id, name from big_star_shop_class where name=#{name} and status = 1
+    </select>
+    <insert id="addBigStarShopClass">
+        insert into big_star_shop_class(id, name, created_time) values (#{id},#{name},#{date})
+    </insert>
+    <update id="updateBigStarShopClass">
+        update big_star_shop_class set name=#{name} where id=#{id} and status = 1
+    </update>
+    <update id="updateBigStaRShopClassStatus">
+        update big_star_shop_class set status=#{status} where id =#{id}
+    </update>
+    <select id="findBigStarShopClass"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SBigStar.Beans.BigStarShopClass">
+
+        select bsc.id,bsc.name,bsc.created_time,COUNT(bss.id) as num
+
+        from big_star_shop_class bsc
+
+
+        LEFT JOIN big_star_shop bss on bsc.id=bss.big_star_shop_class_id and bss.status !=-1
+
+
+        where bsc.status = 1
+
+    <if test="_parameter != null and _parameter != ''">
+        and name like "%"#{search}"%"
+    </if>
+
+        GROUP BY bsc.id,bss.id
+    </select>
+    <insert id="addBigStarShopSpec">
+        insert into big_star_shop_spec (id, name, price, big_star_shop_id, created_time) values (#{id},#{starShopSpec.name},#{starShopSpec.price},#{shopId},#{date})
+    </insert>
+    <update id="updateAllSpecStatusByShopId">
+        update big_star_shop_spec set status = #{status} where big_star_shop_id=#{shopId}
+    </update>
+
+    <delete id="deleteSpecByShopId">
+        delete from big_star_shop_spec where big_star_shop_id=#{id}
+    </delete>
+    <select id="findBigStarShopSpecIds" resultType="java.lang.String">
+        select id from big_star_shop_spec where big_star_shop_id=#{shopId} and status = 1
+    </select>
+    <update id="updateBigStarShopSpec">
+        update big_star_shop_spec set name=#{name},price=#{price},status=1 where id=#{id}
+    </update>
+    <select id="findBigStarShopById" resultMap="BigStarShops">
+        select  bs.id,bs.name,bs.details_url,bs.description,bs.status,bs.big_star_shop_class_id,bs.url,bsc.name as shopClassNameccc
+
+        from big_star_shop bs,big_star_shop_class bsc
+
+        where bs.id=#{bid} and bs.status != -1 and bs.big_star_shop_class_id=bsc.id and bsc.status = 1
+    </select>
+
+    <select id="findBigStarShopSpecBySid" resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SBigStar.Beans.BigStarShopSpec">
+        select id, name, price  from big_star_shop_spec where big_star_shop_id=#{id} and status = 1
+    </select>
+    <select id="findBigStarShopIdByCid" resultType="java.lang.String">
+        select id from big_star_shop where big_star_shop_class_id=#{bid} and status !=-1
+    </select>
+    <update id="setAllBigStarTypes">
+        update big_star set types = 0 where types = 1 and status = 1
+    </update>
+    <update id="setSuperBigStarById">
+        update big_star set types=1 where id=#{id} and status = 1
+    </update>
+    <update id="updateBigStarSort">
+        update big_star set s_sort=#{sort} where id=#{id}
+    </update>
+</mapper>

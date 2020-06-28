@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SIntegral.Mapper.IntegralMapper">
+
+    <select id="findIntegral"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SIntegral.Beans.Integral">
+        select u.id, u.types, u.notice, u.num,s.username ,u.created_time
+
+        from user_integral_journal u,server_user s where u.account_id=s.id and u.status = 1
+    </select>
+    <insert id="addIntegralJournal">
+        insert into user_integral_journal(id, types, notice, num,account_id,created_time) values (#{id},#{types},#{notice},#{num},#{uid},(select NOW()))
+    </insert>
+    <insert id="addUserIntegral">
+        insert into user_integral(id, journal_id, user_id, integral, created_time) values
+        <foreach collection="ids" separator="," item="item">
+            ((select upper(REPLACE(uuid(),'-',''))),#{fid},#{item},#{num},(select NOW()))
+        </foreach>
+    </insert>
+
+</mapper>

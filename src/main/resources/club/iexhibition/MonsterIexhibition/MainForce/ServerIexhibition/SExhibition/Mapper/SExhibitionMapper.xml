@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Mapper.SExhibitionMapper">
+
+    <resultMap id="exhibitionhalls" type="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionHall">
+        <association property="areaName" javaType="String"></association>
+        <association property="cityName" javaType="String"></association>
+    </resultMap>
+
+    <resultMap id="exhibitions" type="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.Exhibition">
+        <result property="id" column="id"></result>
+        <result property="name" column="name"></result>
+        <result property="avatar" column="avatar"></result>
+        <result property="signUpWay" column="sign_up_way"></result>
+        <result property="startTime" column="start_time"></result>
+        <result property="address" column="address"></result>
+        <result property="endTime" column="end_time"></result>
+        <result property="expenses" column="expenses"></result>
+        <result property="exhibitionType" column="exhibition_type"></result>
+        <result property="details" column="details"></result>
+        <result property="createdTime" column="created_time"></result>
+        <result property="status" column="status"></result>
+        <result property="exhibitionHallId" column="exhibition_hall_id"></result>
+        <result property="hallName" column="hallName"></result>
+        <collection property="tagList" ofType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionTag" select="findExhibitionTagByEid" column="id">
+
+        </collection>
+    </resultMap>
+    
+    <resultMap id="cities" type="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.City">
+        <result property="id" column="cid"></result>
+        <result property="name" column="cname"></result>
+        <collection property="areas" ofType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.Area">
+            <result property="id" column="aid"></result>
+            <result property="name" column="aname"></result>
+        </collection>
+    </resultMap>
+
+    <insert id="addExhibition">
+        insert into
+    exhibition(id, name, avatar, sign_up_way, start_time, end_time, exhibition_hall_id, exhibition_type,address,details,intro,created_time,expenses)
+    values(#{exhibition.id},#{exhibition.name},#{exhibition.avatar},#{exhibition.signUpWay},#{exhibition.startTime},#{exhibition.endTime},#{exhibition.exhibitionHallId},#{exhibition.exhibitionType},#{exhibition.address},#{exhibition.details},#{exhibition.intro},#{exhibition.createdTime},#{exhibition.expenses})
+    </insert>
+    <insert id="addCity">
+        insert into city(id, name, created_time) values (#{uuid},#{name},#{date})
+    </insert>
+    <insert id="addArea"
+            parameterType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.Area">
+        insert into area(id, name, city_id, created_time) values(#{id},#{name},#{cityId},#{createdTime})
+    </insert>
+    <insert id="addExhibitionHall"
+            parameterType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionHall">
+        insert into exhibition_hall(id, name, address, area_id,route,created_time) values (#{id},#{name},#{address},#{areaId},#{route},#{createdTime})
+    </insert>
+    <insert id="addExhibitionTag">
+        insert into exhibition_tag(id, name, created_time) values (#{uuid},#{name},#{date})
+    </insert>
+    <insert id="addExhibitionDetails">
+        insert into exhibition_details(id, paragraph_type,paragraph_num, paragraph_content, exhibition_id, created_time)
+
+        values (#{exhibitionDetail.id},#{exhibitionDetail.paragraphType},#{exhibitionDetail.paragraphNum},#{exhibitionDetail.paragraphContent},#{exhibitionDetail.exhibitionId},#{exhibitionDetail.createdTime})
+    </insert>
+    <update id="updateCityStatus">
+        update city set status = #{status} where id=#{cid}
+    </update>
+    <update id="updateAreaStatus">
+        update area set status = #{status} where id = #{aid}
+    </update>
+    <update id="updateExhibitionHallStatus">
+        update exhibition_hall set status = #{status} where id=#{hid}
+    </update>
+    <update id="updateExhibitionStatus">
+        update exhibition set status = #{status} where id=#{eid}
+    </update>
+    <update id="updateCityName">
+        update city set name=#{cname} where id=#{cid}
+    </update>
+    <update id="updateAreaName">
+        update area set name=#{aname} where id=#{aid} and status = 1
+    </update>
+    <update id="updateExhibitionHall">
+        update exhibition_hall set name=#{exhibitionHall.name},area_id=#{exhibitionHall.areaId},address=#{exhibitionHall.address},route=#{exhibitionHall.route} where id=#{exhibitionHall.id} and status = 1
+    </update>
+    <update id="updateExhibitionTagName">
+        update exhibition_tag set name=#{tname} where id=#{tid} and status = 1
+    </update>
+    <update id="updateETagStatus">
+        update exhibition_tag set status = #{status} where id=#{tid}
+    </update>
+    <delete id="deleteETag_EX">
+        delete from `exhibition-exhibition_tag` where exhibition_tag_id=#{tid}
+    </delete>
+    <select id="findCityByName"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.City">
+        select id,name,created_time from city where name = #{name} and status = 1
+    </select>
+    <select id="findAreaByName"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.Area">
+        select id,name,created_time from area where name = #{name} and city_id=#{cityId} and status = 1
+    </select>
+    <select id="findExhibitionHallByAidAndHname"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionHall">
+        select id,name,area_id,address,created_time from exhibition_hall where name=#{name} and area_id=#{areaId} and status = 1
+    </select>
+    <select id="findExhibitionTagByName"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionTag">
+        select id,name,created_time from exhibition_tag where name=#{name} and status = 1
+    </select>
+    <select id="findAllCity"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.City">
+        select DISTINCT c.id,c.name,c.created_time
+
+        from city c
+
+        LEFT JOIN area a on a.city_id = c.id and a.status = 1
+
+        where c.status = 1
+
+        <if test="search !=null and '' !=search">
+            and(c.name like "%"#{search}"%" or a.name like "%"#{search}"%")
+        </if>
+    </select>
+    <select id="findAllAreaByCid"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.Area">
+        select id, name, city_id, created_time from area where city_id = #{cid} and status = 1
+    </select>
+    <select id="findAllExhibitionHall"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionHall">
+        select eh.id,eh.name,eh.route,eh.address,eh.created_time,eh.area_id,a.`name` as areaName,c.`name` as cityName,COUNT(e.id) as num
+
+        from exhibition_hall eh
+
+        LEFT JOIN area a on a.id = eh.area_id and a.status = 1
+
+        LEFT JOIN city c on c.id = a.city_id 	and c.status = 1
+
+        LEFT JOIN exhibition e on e.exhibition_hall_id=eh.id and e.status !=-1
+
+        where eh.status = 1
+
+        <if test="search != null and '' != search">
+            and (eh.name like "%"#{search}"%" or eh.address like "%"#{search}"%" or a.name like "%"#{search}"%" or c.name like "%"#{search}"%")
+        </if>
+
+        GROUP BY eh.id
+    </select>
+    <select id="findExhibitionHallByAid"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionHall">
+        select id, name, address, area_id, created_time
+
+        from exhibition_hall where area_id=#{aid} and status = 1
+    </select>
+    <select id="findExhibitionByHid"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.Exhibition">
+        select id, name, avatar, sign_up_way, start_time, end_time, exhibition_hall_id, exhibition_type, created_time
+
+        from exhibition where exhibition_hall_id=#{hid} and status != -1
+    </select>
+    <select id="findAreaById"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.Area">
+        select id, name, city_id, created_time from area where id=#{aid} and status = 1
+    </select>
+    <select id="findAreaByCidAndAname"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.Area">
+        select id, name, city_id, created_time from area where city_id=#{cid} and name=#{aname} and status = 1
+    </select>
+    <select id="findExhibitionHallById"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionHall">
+        select id, name, address, area_id, created_time
+
+        from exhibition_hall where id=#{id} and status = 1
+    </select>
+    <select id="findAllExhibitionTag"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionTag">
+        select id, name, created_time
+
+        from exhibition_tag where status = 1
+
+        <if test="search != null and search != ''">
+            and name like "%"#{search}"%"
+        </if>
+    </select>
+    <select id="findAllExhibition"
+            resultMap="exhibitions">
+
+        select DISTINCT e.id,e.name,e.avatar,e.sign_up_way,e.address,e.start_time,e.intro,e.end_time,e.exhibition_type,e.created_time,e.expenses,e.`status`,eh.`name` as hallName
+
+        from exhibition e,exhibition_hall eh
+
+        where eh.id=e.exhibition_hall_id and eh.status = 1
+
+    <if test="status != null">
+        and e.status =#{status}
+    </if>
+
+    <if test="status == null">
+            and e.status !=-1
+    </if>
+
+    <if test="search != null and search != ''">
+        and (e.name like "%"#{search}"%" or e.sign_up_way like "%"#{search}"%" or eh.name like "%"#{search}"%")
+    </if>
+
+    <if test="timeStatus==1">
+        and e.end_time &gt; #{date}
+    </if>
+
+    <if test="timeStatus==2">
+        and e.end_time &lt; #{date}
+    </if>
+
+    <if test="timeStatus==3">
+        and e.start_time &gt; #{date}
+    </if>
+
+    <if test="timeStatus==4">
+        and e.end_time &gt; #{date} and e.start_time &lt; #{date}
+    </if>
+
+
+    </select>
+    <update id="updateExhibition">
+        update exhibition set name=#{exhibition.name},sign_up_way=#{exhibition.signUpWay},start_time=#{exhibition.startTime},end_time=#{exhibition.endTime},exhibition_hall_id=#{exhibition.exhibitionHallId},exhibition_type=#{exhibition.exhibitionType},expenses=#{exhibition.expenses},intro=#{exhibition.intro},avatar=#{exhibition.avatar}
+        where id=#{exhibition.id}
+    </update>
+    <update id="updateEAvatar">
+        update exhibition set avatar=#{avatar} where id=#{id}
+    </update>
+    <select id="findAllCityArea"
+            resultMap="cities">
+        select DISTINCT c.id as cid,c.`name` as cname,a.id as aid,a.name as aname
+
+        from city c,area a
+
+        where c.id=a.city_id and c.status = 1 and a.status = 1
+
+		order by a.created_time,c.created_time DESC
+    </select>
+    <select id="findExhibitionDetails" resultType="java.lang.String">
+        select details from exhibition where id=#{eid} and status != -1
+    </select>
+    <update id="updateExhibitionDetails">
+        update exhibition set details=#{details} where id=#{eid}
+    </update>
+    <select id="findExhibitionById" resultMap="exhibitions">
+  select DISTINCT e.id,e.name,e.avatar,e.intro,e.sign_up_way,e.address,e.start_time,e.exhibition_hall_id,e.end_time,e.exhibition_type,e.created_time,e.expenses,e.`status`,eh.`name` as hallName
+
+        from exhibition e,exhibition_hall eh
+
+        where eh.id=e.exhibition_hall_id and eh.status = 1 and e.id=#{eid}
+    </select>
+
+    <insert id="addTagToExhibition">
+        insert into `exhibition-exhibition_tag`(exhibition_id,exhibition_tag_id) values
+        <foreach collection="tags" separator="," item="tag">
+             (#{eid},#{tag})
+        </foreach>
+    </insert>
+    <delete id="deleteTagByEid">
+        delete from `exhibition-exhibition_tag` where exhibition_id=#{id}
+    </delete>
+
+    <select id="findExhibitionTagByEid" resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionTag">
+        select et.* from `exhibition-exhibition_tag` eet,exhibition_tag et
+
+        where eet.exhibition_id=#{id} and et.id=eet.exhibition_tag_id and et.status = 1
+    </select>
+    <select id="findCityAreaToExhibitionHall" resultMap="cities">
+        select DISTINCT c.id as cid,c.`name` as cname,a.id as aid,a.name as aname
+
+        from city c,area a,exhibition_hall eh
+
+        where c.`status` = 1 and a.`status` = 1 and eh.`status` = 1
+
+        and eh.area_id = a.id and a.city_id = c.id
+
+        order by a.created_time,c.created_time desc
+    </select>
+
+</mapper>

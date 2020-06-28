@@ -1,0 +1,2 @@
+[09:49:09:170] [WARN] - org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver.logException(AbstractHandlerExceptionResolver.java:199) - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'GET' not supported]
+[09:59:03:220] [WARN] - org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver.logException(AbstractHandlerExceptionResolver.java:199) - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'GET' not supported]

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SUser.Mapper.SUserMapper">
+
+    <select id="findAllUser"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SUser.Beans.SUser">
+        select u.id,u.name,u.avatar,u.created_time,IFNULL(sum(DISTINCT ui.integral),0) as integral
+
+        from user u
+
+        left join user_integral ui on u.id=ui.user_id
+
+        where u.status = 1 and u.name is not null
+
+        <if test="search != null and search != ''">
+            and u.name like concat('%',#{search},'%')
+        </if>
+
+        group by u.id
+
+        order by u.created_time desc
+    </select>
+    <select id="findSUserById"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SUser.Beans.SUser">
+        select u.name,u.avatar,u.created_time,u.province,u.language,u.gender,u.country,u.city,IFNULL(sum(DISTINCT ui.integral),0) as integral,IFNULL(sum(DISTINCT uw.money),0) as money
+
+        from user u
+
+        left join user_integral ui on ui.user_id = u.id
+
+        left join user_wallet uw on u.id = uw.user_id
+
+        where u.status = 1 and u.name is not null and u.id=#{id}
+    </select>
+    <select id="findUserCommentByUid"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SUser.Beans.SUserComment">
+       (select ec.comment_content as content,ef.url as avatar,ef.title,ec.created_time from exhibition_feeling_comment ec,exhibition_feeling ef
+
+        where ef.`status` = 1 and ec.user_id = #{id} and ec.exhibition_feeling_id = ef.id)
+
+        UNION
+
+        (select mc.content,'a' as avatar,m.title,mc.created_time  from micro_blog_comment mc,micro_blog m
+
+        where m.status = 1 and mc.user_id = #{id} and mc.micro_blog_id = m.id)
+
+        ORDER BY created_time desc
+
+    </select>
+    <select id="findInAssembleByUid"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SUser.Beans.SUserAssemble">
+        select a.name as title,a.url as avatar,a.created_time
+
+        from `assemble-cuser` ac,assemble a
+
+        where ac.user_id=#{openId} and ac.assemble_id=a.id and a.status = 1
+    </select>
+    <select id="findAssembleByUid"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SUser.Beans.SUserAssemble">
+        select a.name as title,a.url as avatar,a.created_time
+
+        from assemble a where status = 1 and a.author = #{openId}
+    </select>
+</mapper>

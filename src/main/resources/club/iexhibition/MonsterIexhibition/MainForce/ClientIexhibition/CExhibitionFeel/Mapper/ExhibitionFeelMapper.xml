@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CExhibitionFeel.Mapper.ExhibitionFeelMapper">
+
+    <resultMap id="exhibitionFeel" type="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CExhibitionFeel.Beans.ExhibitionFeel">
+        <result property="id" column="id"></result>
+        <result property="userId" column="userId"></result>
+        <result property="avatar" column="avatar"></result>
+        <result property="userNickName" column="userNickName"></result>
+        <result property="title" column="title"></result>
+        <result property="url" column="url"></result>
+        <result property="content" column="content"></result>
+        <result property="upNum" column="upNum"></result>
+        <result property="commentNum" column="commentNum"></result>
+        <result property="forWardNum" column="forWardNum"></result>
+        <result property="upUserId" column="upUserId"></result>
+        <result property="toAssembleUserId" column="toAssembleUserId"></result>
+        <result property="createdTime" column="createdTime"></result>
+        <result property="exhibitionId" column="exhibitionId"></result>
+        <result property="exhibitionTitle" column="exhibitionTitle"></result>
+        <result property="exhibitionUrl" column="exhibitionUrl"></result>
+        <result property="isRewards" column="isRewards"></result>
+
+        <collection property="sUrls" ofType="java.lang.String">
+            <result column="album"></result>
+        </collection>
+    </resultMap>
+
+    <select id="findExhibitionFeel"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CExhibitionFeel.Beans.ExhibitionFeel">
+        select ef.id,u.id as userId,u.avatar,u.name as userTickName,ef.title,ef.url,ef.content,
+
+        count(DISTINCT efu.user_id) as upNum,count(DISTINCT efc.id) as commentNum,count(DISTINCT eff.id) as forWardNum,efu2.user_id as upUserId
+
+        from exhibition_feeling ef
+
+        left join user u on u.id=ef.user_id
+
+        left join exhibition_feeling_up efu on ef.id = efu.exhibition_feeling_id
+
+        left join exhibition_feeling_up efu2 on ef.id = efu2.exhibition_feeling_id and efu2.user_id=#{uid}
+
+        left join exhibition_feeling_comment efc on ef.id = efc.exhibition_feeling_id and efc.status = 1
+
+        left join exhibition_feeling_forward eff on ef.id = eff.exhibition_feeling_id
+
+        where ef.status = 1 and u.status = 1
+
+        group by ef.id
+
+        order by ef.created_time desc
+    </select>
+    <insert id="addExhibitionFeel">
+        insert into exhibition_feeling(id, user_id, title, exhibition_id, url, content, created_time,is_rewards)
+
+        values (#{id},#{userId},#{title},#{exhibitionId},#{url},#{content},(select NOW()),#{isRewards})
+    </insert>
+    <insert id="addExhibitionFeelAlbum">
+        insert into exhibition_feeling_album(id, exhibition_feeling_id, url, url_sort, creeated_time)
+
+        values
+
+        <foreach collection="urls" item="item" separator=",">
+            (#{item.id},#{feelId},#{item.url},#{item.urlSort},(select NOW()))
+        </foreach>
+    </insert>
+    <select id="findExhibitionFeelById" resultMap="exhibitionFeel">
+        select ef.id,ef.is_rewards as isRewards,u.id as userId,u.avatar,u.name as userNickName,ef.title,ef.url,ef.content,ef.created_time as createdTime,
+
+        count(DISTINCT efu.user_id) as upNum,count(DISTINCT efc.id) as commentNum,count(DISTINCT eff.id) as forWardNum,efu2.user_id as upUserId
+
+        ,efa.url as album,aa.to_assemble_user_id as toAssembleUserId,e.id as exhibitionId,e.name as exhibitionTitle,e.avatar as exhibitionUrl,ef.is_rewards as isRewards
+
+        from exhibition_feeling ef
+
+        left join user u on u.id=ef.user_id
+
+        left join exhibition e on e.id=ef.exhibition_id
+
+        left join exhibition_feeling_up efu on ef.id = efu.exhibition_feeling_id
+
+        left join exhibition_feeling_up efu2 on ef.id = efu2.exhibition_feeling_id and efu2.user_id=#{uid}
+
+        left join exhibition_feeling_comment efc on ef.id = efc.exhibition_feeling_id and efc.status = 1
+
+        left join exhibition_feeling_forward eff on ef.id = eff.exhibition_feeling_id
+
+        left join exhibition_feeling_album efa on ef.id = efa.exhibition_feeling_id
+
+        left join `assemble-attention` aa on aa.assemble_user_id=#{uid} and aa.to_assemble_user_id=ef.user_id
+
+        where ef.status = 1 and u.status = 1 and ef.id=#{fid}
+
+        group by efa.id
+
+        order by ef.created_time desc,efa.url_sort asc
+    </select>
+    <select id="findExhibitionFeelComment"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CExhibitionFeel.Beans.ExhibitionFeelComment">
+        select e.id,u.id as userId,u.name as userTickName,u.avatar,e.comment_content as content,e.created_time
+
+        from exhibition_feeling_comment e,user u
+
+        where e.status = 1 and e.exhibition_feeling_id=#{fid} and u.status = 1 and u.id=e.user_id
+
+        order by e.created_time asc
+    </select>
+    <select id="findExhibitionFeelUp" resultType="java.lang.String">
+        select user_id
+
+        from exhibition_feeling_up
+
+        where exhibition_feeling_id=#{fid} and user_id=#{uid}
+    </select>
+    <delete id="deleteExhibitionFeelUp">
+        delete from exhibition_feeling_up where user_id=#{uid} and exhibition_feeling_id=#{fid}
+    </delete>
+    <insert id="addExhibitionFeelUp">
+        insert into exhibition_feeling_up (exhibition_feeling_id, user_id)
+
+        values (#{fid},#{uid})
+    </insert>
+    <select id="findExhibitionContent" resultType="java.lang.String">
+        select content
+
+        from exhibition_feeling
+
+        where id=#{fromId}
+    </select>
+    <select id="findExhibitionAlbum" resultType="java.lang.String">
+        select url
+
+        from exhibition_feeling_album
+
+        where exhibition_feeling_id=#{fromId}
+
+        order by url_sort asc
+    </select>
+    <insert id="exhibitionFeelComment">
+        insert into exhibition_feeling_comment(id, exhibition_feeling_id, user_id, comment_content, created_time)
+
+        values (#{id},#{exhibitionFeelId},#{userId},#{content},(select NOW()))
+    </insert>
+    <select id="findExhibitionFeelCommentId" resultType="java.lang.String">
+        select user_id
+
+        from exhibition_feeling_comment
+
+        where status = 1 and id=#{id} and user_id=#{openId}
+    </select>
+    <update id="updateExhibitionFeelCommentStatus">
+        update exhibition_feeling_comment set status=#{status} where id=#{id}
+    </update>
+    <insert id="exhibitionFeelForward">
+        insert into exhibition_feeling_forward (id, user_id, exhibition_feeling_id)
+
+        values (#{id},#{uid},#{eid})
+    </insert>
+</mapper>

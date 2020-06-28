@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CBigStar.Mapper.CBigStarMapper">
+
+
+    <resultMap id="bigStars" type="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CBigStar.Beans.CBigStar">
+        <result property="id" column="id"></result>
+        <result property="name" column="name"></result>
+        <result property="url" column="url"></result>
+        <result property="introduce" column="introduce"></result>
+        <result property="commentNum" column="commentNum"></result>
+        <collection property="urls" ofType="java.lang.String">
+            <result column="album"></result>
+        </collection>
+    </resultMap>
+
+    <select id="findSuperBigStar"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CBigStar.Beans.CBigStar">
+        select id, name, avatar as url, introduce, created_time
+
+        from big_star where status = 1
+
+        and types = 1
+
+
+    </select>
+    <select id="findElseBigStar"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CBigStar.Beans.CBigStar">
+        select id,name,avatar as url
+
+        from big_star where status  = 1 and id!=#{id}
+
+        order by s_sort desc,created_time desc
+    </select>
+    <select id="findGoods"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CBigStar.Beans.Goods">
+        select bs.id,bs.name as title,bs.url,min(bssc.price) as price,(sum(distinct IFNULL(o.goods_num,0))) as sales
+
+        from big_star_shop bs
+
+        left join big_star_shop_spec bssc on bs.id=bssc.big_star_shop_id
+
+        left join orders_split o on bssc.id = o.shop_spec_id and o.status = 1 and (o.state=2 or o.state = 3 or o.state = 4)
+
+        where bs.status = 1 and bssc.status = 1
+
+        group by bs.id
+
+        order by bs.created_time desc
+    </select>
+    <select id="findActivity"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CBigStar.Beans.CActivity">
+        select id, name as title, start_time, end_time, activity_people_num as sumNum,url
+
+        from lanji_activity
+
+        where status = 1
+
+        <if test="search != null and search != ''">
+            and name like concat('%',#{search},'%')
+        </if>
+
+        order by created_time desc
+    </select>
+    <select id="findBigStarById"
+            resultMap="bigStars">
+        select b.id,b.name,b.avatar as url,b.introduce,count(distinct bsefc.id) as commentNum,ba.url as album
+
+        from big_star b
+
+        left join big_star_exhibition_feeling_comment bsefc on b.id = bsefc.big_star_id
+
+        left join big_star_album ba on b.id = ba.big_star_id and ba.status = 1
+
+        where b.status = 1 and b.id=#{id}
+
+        group by ba.id
+
+        order by ba.url_sort asc
+    </select>
+    <select id="findBigStar" resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CBigStar.Beans.CBigStar">
+        select id,name,avatar as url,introduce
+
+        from big_star
+
+        where status = 1
+
+        order by s_sort desc,created_time desc
+    </select>
+    <select id="findActivityById"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CBigStar.Beans.CActivity">
+        select id, name as title, url, start_time, end_time,price,spec, address, details, main, cooperate, activity_people_num as sumNum,details_url
+
+        from lanji_activity
+
+        where status = 1 and id=#{id}
+    </select>
+    <select id="findAllBigStar" resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CBigStar.Beans.CBigStar">
+        select id,name,avatar as url
+
+        from big_star
+
+        where status = 1
+
+        order by s_sort desc,created_time desc
+    </select>
+    <select id="findActivityNum" resultType="java.util.Map">
+        select la.activity_people_num as apn,count(lau.id) as apc
+
+        from lanji_activity la
+
+        left join lanji_activity_user lau on la.id = lau.activity_id
+
+        where la.status = 1 and la.id=#{activityId}
+    </select>
+    <select id="findActivityUser" resultType="java.lang.String">
+        select user_id
+
+        from lanji_activity_user
+
+        where activity_id=#{aid} and user_id=#{uid}
+    </select>
+    <insert id="inActivity">
+        insert into lanji_activity_user(id, user_id, activity_id, activity_name, activity_url, activity_spec, activity_expenses, tick_name, phone_num, sign_up_num, sum_expenses, created_time)
+
+        values (#{id},#{uid},#{aid},#{aName},#{aUrl},#{spec},#{price},#{tickName},#{phoneNum},#{signUpNum},#{sumExpenses},(select NOW()))
+    </insert>
+</mapper>

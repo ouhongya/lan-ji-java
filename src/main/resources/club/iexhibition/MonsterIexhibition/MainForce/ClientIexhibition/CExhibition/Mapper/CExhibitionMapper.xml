@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CExhibition.Mapper.CExhibitionMapper">
+
+
+    <resultMap id="exhibitions" type="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CExhibition.Beans.Cexhibition">
+
+        <collection property="elseExhibitions" ofType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CExhibition.Beans.Cexhibition" select="findExhibitionByHid" column="{hid=exhibitionHallId,eid=id}">
+
+        </collection>
+    </resultMap>
+
+    <resultMap id="elseExhibitions" type="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CExhibition.Beans.Cexhibition">
+
+    </resultMap>
+
+    <select id="findExhibition"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CExhibition.Beans.Cexhibition">
+        select e.id,e.name as title,e.avatar as url,e.start_time as startDate,e.end_time as endDate,e.intro,e.address,h.exhibition_hall_id as hallId,eh.address as hallAddress,eh.name as hallName
+
+        from exhibition e
+
+        left join `exhibition_hall-attention` h on e.exhibition_hall_id = h.exhibition_hall_id and h.user_id=#{uid}
+
+        left join exhibition_hall eh on e.exhibition_hall_id = eh.id
+
+        where e.status = 1 and eh.status = 1
+    </select>
+    <select id="findExhibitionById"
+           resultMap="exhibitions">
+        select e.id,e.name as title,eh.name as hallName,e.expenses as price,e.avatar as url,e.exhibition_hall_id as exhibitionHallId,e.start_time as startDate,e.end_time as endDate,e.address,e.sign_up_way as remarks,e.details,h.exhibition_hall_id as hallId,eh.address as hallAddress
+
+        from exhibition e
+
+        left join `exhibition_hall-attention` h on e.exhibition_hall_id = h.exhibition_hall_id and h.user_id=#{uid}
+
+        left join exhibition_hall eh on e.exhibition_hall_id = eh.id
+
+        where e.status = 1 and e.id=#{eid}
+
+    </select>
+
+    <select id="findExhibitionByHid" resultMap="elseExhibitions">
+            select id, avatar as url, name as title,start_time as startDate,end_time as endDate from exhibition where exhibition_hall_id = #{hid} and id <![CDATA[ <> ]]> #{eid} and status = 1 limit 1,10
+    </select>
+    <select id="findExhibitionHallIdByEid" resultType="java.lang.String">
+        select exhibition_hall_id
+
+        from exhibition
+
+        where id=#{eid}
+    </select>
+    <select id="findExhibitionAttention" resultType="java.lang.String">
+        select user_id
+
+        from `exhibition_hall-attention`
+
+        where user_id=#{uid} and exhibition_hall_id=#{hallId}
+    </select>
+    <insert id="exhibitionAttention">
+        insert into `exhibition_hall-attention` (exhibition_hall_id, user_id) values (#{hallId},#{uid})
+    </insert>
+    <delete id="deleteExhibitionAttention">
+        delete from `exhibition_hall-attention` where user_id=#{uid} and exhibition_hall_id=#{hallId}
+    </delete>
+    <select id="findExhibitionByIdAssemble" resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CExhibition.Beans.Cexhibition">
+        select avatar as url,eh.address as hallAddress,e.address,e.details
+
+        from exhibition e,exhibition_hall eh
+
+        where e.id=#{id} and e.exhibition_hall_id=eh.id
+    </select>
+    <select id="findExhibitionUrlById" resultType="java.lang.String">
+        select avatar from exhibition where id=#{eid}
+    </select>
+
+</mapper>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CMicroBlog.Mapper.MicroBlogMapper">
+
+    <resultMap id="microBlog" type="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CMicroBlog.Beans.MicroBlog">
+        <result property="id" column="id"></result>
+        <result property="userId" column="userId"></result>
+        <result property="userTickName" column="userTickName"></result>
+        <result property="avatar" column="avatar"></result>
+        <result property="title" column="title"></result>
+        <result property="content" column="content"></result>
+        <result property="upNum" column="upNum"></result>
+        <result property="commentNum" column="commentNum"></result>
+        <result property="forWardNum" column="forWardNum"></result>
+        <result property="upUserId" column="upUserId"></result>
+        <result property="toAssembleUserId" column="toAssembleUserId"></result>
+    </resultMap>
+
+    <select id="findMicroBlog"
+            resultMap="microBlog">
+(select m.id as id,m.user_id as userId,m.title as title,'1' as exhibitionId,'2' as url,m.content as content,m.created_time as createdTime,u.name as userNickName,u.avatar as avatar,COUNT(DISTINCT mu.user_id) as upNum
+
+,mu2.user_id as upUserId,COUNT(DISTINCT mc.id) as commentNum,COUNT(DISTINCT mf.id) as forWardNum
+
+from micro_blog m
+
+LEFT JOIN user u on m.user_id = u.id
+
+LEFT JOIN micro_blog_up mu on m.id=mu.micro_blog_id
+
+LEFT JOIN micro_blog_up mu2 on m.id=mu.micro_blog_id and mu.user_id='1118AD57D90A4117809A1E2EFC898B0F'
+
+LEFT JOIN micro_blog_comment mc on mc.micro_blog_id = m.id
+
+LEFT JOIN micro_blog_forward mf on mf.micro_blog_id=m.id
+
+where m.status = 1 and u.status = 1
+
+GROUP BY m.id)
+
+UNION
+
+(select e.id as id,e.user_id as userId,e.title as title,e.exhibition_id as exhibitionId,e.url as url,e.content as content,e.created_time as createdTime,u.name as tickName,u.avatar as avatar
+
+,COUNT(DISTINCT eu.user_id) as upNum,eu2.user_id as upUserId,COUNT(DISTINCT ec.id) as commentNum,COUNT(DISTINCT ef.id) as forWardNum
+
+from exhibition_feeling e
+
+LEFT JOIN user u on e.user_id = u.id
+
+LEFT JOIN exhibition_feeling_up eu on eu.exhibition_feeling_id = e.id
+
+LEFT JOIN exhibition_feeling_up eu2 on eu2.exhibition_feeling_id = e.id and eu2.user_id = '1118AD57D90A4117809A1E2EFC898B0F'
+
+LEFT JOIN exhibition_feeling_comment ec on ec.exhibition_feeling_id = e.id
+
+LEFT JOIN exhibition_feeling_forward ef on ef.exhibition_feeling_id = e.id
+
+where e.status = 1 and u.status = 1
+
+<if test="search != null and search != ''">
+    and title like concat('%',#{search},'%')
+</if>
+
+GROUP BY e.id)
+
+ORDER BY createdTime desc
+
+
+
+
+
+    </select>
+    <select id="findMicroBlogById" resultMap="microBlog">
+        select mb.id,u.id as userId,u.name as userTickName,u.avatar,mb.title,mb.content,mba.url as album,count(DISTINCT mu.user_id) as upNum,count(DISTINCT mc.id) as commentNum,count(DISTINCT mf.id) as forWardNum
+
+        ,mu2.user_id as upUserId,aa.to_assemble_user_id as toAssembleUserId
+
+        from micro_blog mb
+
+        left join user u on u.id=mb.user_id
+
+        left join micro_blog_album mba on mba.micro_blog_id=mb.id
+
+        left join micro_blog_up mu on mb.id = mu.micro_blog_id
+
+        left join micro_blog_up mu2 on mb.id=mu2.micro_blog_id and mu2.user_id=#{uid}
+
+        left join micro_blog_comment mc on mc.micro_blog_id=mb.id
+
+        left join micro_blog_forward mf on mb.id = mf.micro_blog_id
+
+        left join `assemble-attention` aa on aa.to_assemble_user_id=mb.user_id and aa.assemble_user_id=#{uid}
+
+        where mb.status = 1 and mb.id=#{id}
+
+        group by mba.id
+
+        order by mb.created_time desc,mba.url_sort asc
+    </select>
+    <select id="findCommentByMid"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CMicroBlog.Beans.MicroBlogComment">
+        select m.id,u.id as userId,u.name as userTickName,u.avatar,m.content,m.created_time
+
+        from micro_blog_comment m,user u
+
+        where m.status = 1 and m.micro_blog_id=#{mid} and m.user_id=u.id and u.status = 1
+
+        order by m.created_time asc
+    </select>
+    <insert id="addMicroBlog">
+        insert into micro_blog (id, user_id, title, content, created_time) values (#{id},#{userId},#{title},#{content},(select NOW()))
+    </insert>
+    <insert id="addMicroBlogAlbum">
+        insert into micro_blog_album(id, micro_blog_id, url, url_sort, created_time) values
+
+        <foreach collection="albums" separator="," item="item">
+            (#{item.id},#{mid},#{item.url},#{item.urlSort},(select NOW()))
+        </foreach>
+
+    </insert>
+    <insert id="microBlogComment">
+        insert into micro_blog_comment (id, user_id, micro_blog_id, content, created_time) values (#{id},#{userId},#{microBlogId},#{content},(select NOW()))
+    </insert>
+    <update id="updateMicroBlogCommentStatus">
+        update micro_blog_comment set status=#{status} where id=#{id}
+    </update>
+    <select id="findMicroBlogUp" resultType="java.lang.String">
+        select user_id
+
+        from micro_blog_up where user_id=#{uid} and micro_blog_id=#{mid}
+    </select>
+    <insert id="microBlogUp">
+        insert into micro_blog_up(user_id, micro_blog_id) values (#{uid},#{mid})
+    </insert>
+    <insert id="microBlogForWard">
+        insert into micro_blog_forward(id, user_id, micro_blog_id) values (#{id},#{uid},#{mid})
+    </insert>
+    <delete id="deleteMicroBlogUp">
+        delete from micro_blog_up where user_id=#{uid} and micro_blog_id=#{mid}
+    </delete>
+    <select id="findMicroBlogContent" resultType="java.lang.String">
+        select content
+
+        from micro_blog
+
+        where id=#{fromId}
+    </select>
+    <select id="findMicroBlogAlbum" resultType="java.lang.String">
+        select url
+
+        from micro_blog_album
+
+        where micro_blog_id=#{fromId}
+
+        order by url_sort asc
+    </select>
+</mapper>

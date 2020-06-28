@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SAssemble.Mapper.AssembleMapper">
+
+    <resultMap id="cities" type="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.City">
+        <result property="id" column="cid"></result>
+        <result property="name" column="cname"></result>
+        <collection property="areas" ofType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.Area">
+            <result property="id" column="aid"></result>
+            <result property="name" column="aname"></result>
+        </collection>
+    </resultMap>
+
+
+    <select id="findAllAssemble"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SAssemble.Beans.Assemble">
+
+        <if test="cityId != null and cityId != ''">
+            select aas.id,aas.author,aas.exhibition_id,aas.created_time,aas.name,u.name as authorName,e.name as exhibitionName
+
+            from city c,area a,exhibition_hall eh,exhibition e,assemble aas,user u
+
+            where c.`status` = 1 and a.`status` = 1 and eh.`status` = 1 and e.`status` !=-1 and aas.`status`=1 and u.status = 1
+
+            and c.id=#{cityId} and a.city_id = c.id and eh.area_id = a.id and e.exhibition_hall_id=eh.id and aas.exhibition_id = e.id and aas.author=u.id
+        </if>
+        <if test="cityId == null or cityId == ''">
+            select aas.id,aas.author,aas.created_time,aas.name,u.name as authorName
+
+            from assemble aas,user u
+
+            where aas.`status` = 1 and u.status = 1 and aas.author = u.id and aas.exhibition_id is null
+        </if>
+
+        <if test="paramBean.search != null and paramBean.search != ''">
+            and aas.name like "%"#{paramBean.search}"%"
+        </if>
+
+        <if test="status==2">
+            and aas.assemble_time &gt; #{date}
+        </if>
+        <if test="status==3">
+            and  aas.assemble_time &lt;= #{date}
+        </if>
+    </select>
+    <select id="findAssembleDetails"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SAssemble.Beans.AssembleDetails">
+       select a.id,a.author,a.name,a.exhibition_id,a.assemble_time,a.expenses,a.address,a.assemble_people_num,a.created_time,u.name as authorName,e.name as exhibitionName,
+
+        count(ac.user_id) as assembleSignPeopleNum
+
+       from assemble a
+
+       left join  user u on a.author = u.id and u.status = 1
+
+       left join  `assemble-cuser` ac on a.id=ac.assemble_id
+
+       left join  exhibition e on a.exhibition_id = e.id and e.status!=-1
+
+       where a.id=#{assembleId}
+
+       group by a.id
+    </select>
+    <select id="findAssembleByEid"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SAssemble.Beans.Assemble">
+        select aas.id,aas.author,aas.exhibition_id,aas.created_time,aas.name,u.name as authorName,e.name as exhibitionName
+
+        from assemble aas,exhibition e,user u
+
+        where aas.`status` = 1 and e.`status` = 1 and u.`status` = 1
+
+        and aas.author = u.id and aas.exhibition_id = e.id and e.id = #{eid}
+
+        <if test="search != null and search != ''">
+            and aas.name like "%"#{search}"%"
+        </if>
+
+        <if test="status==2">
+            and aas.assemble_time &gt; #{date}
+        </if>
+
+        <if test="status==3">
+            and  aas.assemble_time &lt;= #{date}
+        </if>
+    </select>
+    <select id="findCityAreaToAssemble"
+            resultMap="cities">
+        select DISTINCT c.id as cid,c.`name` as cname,a.id as aid,a.name as aname
+
+        from city c,area a,exhibition_hall eh,exhibition e,assemble aas
+
+        where c.`status` = 1 and a.`status` = 1 and eh.`status` = 1 and e.`status`!=-1 and aas.`status` = 1
+
+        and aas.exhibition_id = e.id and e.exhibition_hall_id = eh.id and eh.area_id = a.id and a.city_id = c.id
+
+		order by c.created_time,a.created_time desc
+
+    </select>
+    <update id="updateAssembleStatus">
+        update assemble set status=#{status} where exhibition_id=#{eid}
+    </update>
+</mapper>

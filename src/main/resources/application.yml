@@ -1,0 +1,53 @@
+server:
+  port: 8888
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+    url: jdbc:mysql://172.17.0.1:7306/iexhibition?useSSL=false&serverTimezone=GMT%2B8&characterEncoding=utf8
+    type: com.alibaba.druid.pool.DruidDataSource
+  servlet:
+    multipart:
+      max-file-size: 2000MB
+      max-request-size: 10000MB
+  mvc:
+    async:
+      request-timeout: 60000
+
+mybatis:
+  mapperLocations: classpath:club/iexhibition/MonsterIexhibition/MainForce/*/*/Mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+#pagehelper:
+#  helperDialect: mysql
+#  reasonable: true
+#  supportMethodsArguments: true
+#  pageSizeZero: true
+#  params: count=countSql
+#腾讯云 secretId
+secretId: AKID8OURAfIte2ED2lpwLm59wA91h8KInYdV
+#腾讯云 secretKey
+secretKey: kW5RbXEXfaGhtsdLq6C5jEXcS7YlkU4S
+#腾讯云对象存储 存储桶名称
+bucketName: ohhmyimg-1300857723
+#WX端存储桶名称
+wxBucketName: wx-1300857723
+#腾讯云指定的地区缩写
+area: ap-chengdu
+#token密钥
+tokenKey: 览集天下第一，西湖的水，我的泪，我情愿和你化作一团火焰
+#RSA加密公钥
+pubKey: MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCF/e/XyZIbSs1UrlboQOG/tjE3cnqoqMoscahEUhv5pKMNXi6x5UPY/bLmUMndv1MHIAwHtDs/Mpf++pNVqHdDpLxtkXtM/OoxejNOiOibbTbuvoxI+k0JukMkz6J+d5V4HwqQk2wzxeNlPMRLlx/OsUH6keT77r++xDS5xmSh6wIDAQAB
+#RSA解密私钥
+priKey: MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAIX979fJkhtKzVSuVuhA4b+2MTdyeqioyixxqERSG/mkow1eLrHlQ9j9suZQyd2/UwcgDAe0Oz8yl/76k1Wod0OkvG2Re0z86jF6M06I6JttNu6+jEj6TQm6QyTPon53lXgfCpCTbDPF42U8xEuXH86xQfqR5Pvuv77ENLnGZKHrAgMBAAECgYBOIBXsN7dc+mxmZ5B8svftlAl2TuV92YyoBU0bKNTu5jO746JOT2MT7jiVWZ2aEagTi3f4NfolixZcsTWeyC9hBIkGVONjkuGoj99H1Oln57EH3l80SUPFxAY0CT5pIcYSPTXCML1qKVsq4clTbVpkAu62UVuJIrhxgY74CDZ9AQJBAMt8WnuIqvkYCFFPiMWd6pGZzFRWH0g3y6GFfHLrb6PRZXmOKny/g3HQS/24GPCC7I9mNwzJMU5xwYHP2f0n1YsCQQCokloBwelIM2n5N6bdFv4HQuHWBo1Ts1Rk0fhUqMkZEg32LKAkjvoxCnfWGxbey7eDyVGFeKf8/OW+hMDCd7EhAkACUcGKRO2F91Mo8hoh/oHM9Q7SK0UiApjMl4Pqn2pfWKSqdQdg8qHh6zjihHWsUCG4JLcd6zEnrr5A54iZjRmvAkBJb2gyd80unOc/oFTa39dORn6nhDcxDWBog2gRSW5Bs7HNWmdxRbAMiSjnZumxqUGK8brH0GYuOeXD94UZspbBAkEAoUS0kBqlf6zrkfvGkLYro0HvDcMGBZ1HE/sot/nBGtHi945LFX2I4W6G/SVo+HyxMQNWI3V/HThCA98mKAzm2w==
+#后台token过期时间   单位：毫秒
+tokenTime: 10800000
+#WXtoken过期时间
+clientTokenTime: 3153600000000
+#运费
+freight: 30
+#小程序appId
+AppId: wx94b715d90505b19f
+#小程序appSecret
+Secret: af545c9948475386b2b860ff53081d32

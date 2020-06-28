@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SRouteRecommendation.Mapper.SRouteRecommendationMapper">
+
+    <resultMap id="routeCs" type="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SRouteRecommendation.Beans.RouteC">
+        <result property="id" column="id"></result>
+        <result property="city" column="cname"></result>
+        <result property="name" column="uname"></result>
+        <result property="avatar" column="uAvatar"></result>
+        <result property="exhibitionTime" column="rexhibitionTime"></result>
+        <result property="createdTime" column="createdTime"></result>
+        <collection property="tags" ofType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionTag" column="id" select="findTagsById" javaType="arraylist">
+            <result column="tags"></result>
+        </collection>
+        <collection property="types" ofType="java.lang.Integer" column="id" select="findTypesById" javaType="arraylist">
+            <result column="types"></result>
+        </collection>
+    </resultMap>
+
+    <resultMap id="exhibitions" type="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.Exhibition">
+        <result property="id" column="id"></result>
+        <result property="name" column="name"></result>
+        <result property="avatar" column="avatar"></result>
+        <result property="signUpWay" column="sign_up_way"></result>
+        <result property="startTime" column="start_time"></result>
+        <result property="address" column="address"></result>
+        <result property="endTime" column="end_time"></result>
+        <result property="expenses" column="expenses"></result>
+        <result property="exhibitionType" column="exhibition_type"></result>
+        <result property="details" column="details"></result>
+        <result property="createdTime" column="created_time"></result>
+        <result property="status" column="status"></result>
+        <result property="exhibitionHallId" column="exhibition_hall_id"></result>
+        <result property="hallName" column="hallName"></result>
+    </resultMap>
+
+
+
+    <select id="findTagsById" resultType="club.iexhibition.MonsterIexhibition.MainForce.ServerIexhibition.SExhibition.Beans.ExhibitionTag">
+select et.id,et.name from exhibition_tag et,`route_recommend-exhibition_tag` rret
+
+where et.id=rret.exhibition_tag_id and rret.route_recommend_commit_id=#{id}
+    </select>
+
+    <select id="findTypesById" resultType="Integer">
+        select exhibition_type from `route_recommend-exhibition_type` where route_recommend_commit_id  = #{id}
+    </select>
+    <select id="findRouteC"
+            resultMap="routeCs">
+        select rrc.id as id,rrc.exhibition_time as rexhibitionTime,u.`name` as uname,u.avatar as uAvatar,c.`name` as cname,rrc.created_time as createdTime
+
+        from route_recommend_commit rrc,user u,city c
+
+        where rrc.city_id=c.id and rrc.user_id=u.id and rrc.is_attend = 1 and rrc.status = 1 and c.status = 1 and u.status = 1
+
+        <if test="search != null and search != ''">
+            and (u.name like "%"#{search}"%" or c.name like "%"#{search}"%")
+        </if>
+    </select>
+    <select id="findRecomExhibition"
+            resultMap="exhibitions">
+        select DISTINCT e.id,e.name,e.avatar,e.sign_up_way,e.start_time,e.end_time,e.exhibition_hall_id,e.exhibition_type,e.address,e.expenses,eh.name as hallName
+
+
+        from route_recommend_commit rrc,city c,area a,exhibition_hall eh,`route_recommend-exhibition_tag` rret,`exhibition-exhibition_tag` eet,exhibition e,`route_recommend-exhibition_type` reet
+
+
+        where rrc.id=#{rid} and rrc.city_id = c.id and a.city_id = c.id and eh.area_id = a.id and e.exhibition_hall_id=eh.id and e.start_time &lt;= rrc.exhibition_time and rrc.exhibition_time &lt;= e.end_time  and eh.id=e.exhibition_hall_id and
+
+
+        ((rret.route_recommend_commit_id=rrc.id and rret.exhibition_tag_id=eet.exhibition_tag_id
+
+
+        and e.id=eet.exhibition_id and e.status = 1 and reet.route_recommend_commit_id=rrc.id and reet.exhibition_type=e.exhibition_type) or (rret.route_recommend_commit_id=rrc.id and rret.exhibition_tag_id=eet.exhibition_tag_id
+
+
+        and e.id=eet.exhibition_id and e.status = 1) or (reet.route_recommend_commit_id=rrc.id and reet.exhibition_type=e.exhibition_type and e.status  = 1))
+
+        <if test="search != null and search != ''">
+            and (e.name like "%"#{search}"%" or e.sign_up_way like "%"#{search}"%" or e.address like "%"#{search}"%" or eh.name like "%"#{search}"%")
+        </if>
+
+    </select>
+    <select id="findTagNameByEid" resultType="java.lang.String">
+        select et.name
+
+        from `exhibition-exhibition_tag` eet,exhibition_tag et
+
+        where eet.exhibition_id=#{id} and eet.exhibition_tag_id=et.id and et.status = 1
+    </select>
+
+    <insert id="addRouteR">
+        insert into route_recommend_response(id, exhibition_id, exhibition_time, route_recommend_commit_id, created_time)
+        values (#{id},#{exhibitionId},#{time},#{rid},#{date})
+    </insert>
+
+    <update id="updateRouteIsAttend">
+        update route_recommend_commit set is_attend=#{isAttend} where id=#{id}
+    </update>
+
+
+</mapper>

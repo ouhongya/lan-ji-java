@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CAssemble.Mapper.CAssembleMapper">
+    
+    <resultMap id="cassembles" type="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CAssemble.Beans.CAssemble">
+
+
+        <collection property="CAssembles" ofType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CAssemble.Beans.CAssemble" select="findElseAssemble" column="{uid=userId,id=id}">
+
+        </collection>
+
+
+    </resultMap>
+
+    <resultMap id="elsecassembles" type="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CAssemble.Beans.CAssemble">
+
+    </resultMap>
+
+    <select id="findAssemble"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CAssemble.Beans.CAssemble">
+
+    select a.id,u.name as userTickName,u.avatar as userAvatar,a.name as title,a.address,a.url,aa.to_assemble_user_id,a.author as userId,a.assemble_time as assembleTime
+
+    ,sum(IFNULL(ach.hot_value,0)) as hotNum
+
+    from assemble a
+
+    left join user u on a.author=u.id
+
+    left join `assemble-attention` aa on aa.assemble_user_id=#{uid} and aa.to_assemble_user_id = a.author
+
+    left join assemble_cheer ach on ach.assemble_id = a.id
+
+    where a.status = 1 and u.status = 1 and a.assemble_time &gt; #{date}
+
+    group by a.id
+
+    order by hotNum desc
+    </select>
+    <select id="findAssembleById"
+            resultMap="cassembles">
+            select  a.id as id,u.name as userTickName,u.avatar as userAvatar,u.id as userId,a.name as title,a.address as address,a.url as url,aa.to_assemble_user_id as toAssembleUserId,a.assemble_time as assembleTime
+
+        ,a.expenses as expenses,a.assemble_people_num as sumNum,count(distinct ac.user_id) as num,a.content as content,a.details as details,ac2.user_id as inAssembleUserId,a.phone_num
+
+        from assemble a
+
+        left join user u on a.author=u.id and u.status = 1
+
+        left join `assemble-attention` aa on aa.to_assemble_user_id=a.author and aa.assemble_user_id = #{uid}
+
+        left join `assemble-cuser` ac on ac.assemble_id = a.id
+
+        left join `assemble-cuser` ac2 on ac2.user_id=#{uid} and ac2.assemble_id=#{id}
+
+        where a.id=#{id} and a.status = 1
+
+    </select>
+
+    <select id="findElseAssemble" resultMap="elsecassembles">
+        select a.id,a.name as title,a.assemble_time as assembleTime,a.url as url
+
+        from assemble a
+
+        where status = 1 and a.author=#{uid} and assemble_time &gt; (select NOW()) and id!=#{id}
+    </select>
+    <select id="findAssembleAlbum" resultType="java.lang.String">
+        select url from assemble_Album where assemble_id = #{aid} and status = 1 order by url_sort asc
+    </select>
+    <select id="findAssembleByEid" resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.CAssemble.Beans.CAssemble">
+        select a.id,u.name as userTickName,u.avatar as userAvatar,a.name as title,a.address,a.url,aa.to_assemble_user_id,a.author as userId,a.assemble_time as assembleTime
+
+        ,sum(IFNULL(ach.hot_value,0)) as num
+
+        from assemble a
+
+        left join user u on a.author=u.id
+
+        left join `assemble-attention` aa on aa.assemble_user_id=#{uid} and aa.to_assemble_user_id = a.author
+
+        left join assemble_cheer ach on ach.assemble_id = a.id
+
+        where a.status = 1 and u.status = 1 and a.assemble_time &gt; (select NOW()) and a.exhibition_id=#{eid}
+
+        group by a.id
+
+        order by num desc
+    </select>
+    <insert id="addAssembleNoE">
+        insert into assemble (id, author, name, url,expenses, assemble_time, address, assemble_people_num,content, details, created_time,phone_num)
+
+        values (#{id},#{userId},#{title},#{url},#{expenses},#{assembleTime},#{address},#{sumNum},#{content},#{details},(select Now()),#{phoneNum})
+    </insert>
+    <insert id="addAssembleAlbum">
+        insert into assemble_Album(id, assemble_id, url, created_time) VALUES
+        <foreach collection="urls" separator="," item="item">
+            (#{item.id},#{aid},#{item.url},(select NOW()))
+        </foreach>
+    </insert>
+    <insert id="addAssemble">
+        insert into assemble (id, author, name, url,expenses ,exhibition_id, assemble_time, address, content, phone_num,details,created_time,assemble_people_num)
+
+        values (#{id},#{userId},#{title},#{url},#{expenses},#{exhibitionId},#{assembleTime},#{address},#{content},#{phoneNum},#{details},(select NOW()),#{sumNum})
+    </insert>
+    <select id="findAttention" resultType="java.lang.String">
+        select assemble_user_id
+
+        from `assemble-attention`
+
+        where assemble_user_id=#{uid} and to_assemble_user_id=#{aUid}
+    </select>
+    <select id="findAuthorByAid" resultType="java.lang.String">
+        select author
+
+        from assemble
+
+        where id=#{aid}
+    </select>
+    <insert id="addAssembleAttention">
+        insert into `assemble-attention` (assemble_user_id, to_assemble_user_id) values (#{uid},#{toUid})
+    </insert>
+    <delete id="deleteAttention">
+        delete from `assemble-attention` where assemble_user_id=#{uid} and to_assemble_user_id=#{aUid}
+    </delete>
+
+    <select id="findHotValue" resultType="java.lang.Integer">
+        select sum(hot_value)
+
+        from assemble_cheer
+
+        where assemble_id=#{id}
+    </select>
+    <select id="findDoubleAssembleUserNum" resultType="java.util.Map">
+        select IFNULL(a.assemble_people_num,0) as sumNum,count(ac.user_id) as num
+
+        from assemble a
+
+        left join `assemble-cuser` ac on ac.assemble_id = a.id
+
+        where a.id=#{aid}
+    </select>
+    <insert id="inAssemble">
+    insert into `assemble-cuser` (id, assemble_id, user_id, tick_name, phone_num, created_time) values (#{id},#{aid},#{uid},#{tickName},#{phoneNum},(select NOW()))
+    </insert>
+    <select id="findInAssemble" resultType="java.lang.String">
+        select user_id
+
+        from `assemble-cuser`
+
+        where user_id=#{uid} and assemble_id=#{aid}
+    </select>
+    <select id="findCheerNum" resultType="java.lang.Integer">
+        select sum(prop_num)
+
+        from assemble_cheer
+
+        where assemble_id=#{id}
+    </select>
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.WxLogin.Mapper.UserMapper">
+
+    <select id="findIdByOpenId" resultType="java.lang.String">
+        select id from user where id=#{openId}
+    </select>
+    <insert id="addOpenId">
+        insert into user (id,created_time) values (#{openId},(select NOW()))
+    </insert>
+    <update id="addUser">
+        update user set name=#{name},avatar=#{avatar},city=#{city},country=#{country},gender=#{gender},language=#{language},province=#{province} where id=#{id}
+    </update>
+    <select id="findUserById"
+            resultType="club.iexhibition.MonsterIexhibition.MainForce.ClientIexhibition.WxLogin.Beans.User">
+        select id, name, avatar, city, country, gender, "language", province, created_time from user where id=#{openId} and status = 1
+    </select>
+    <select id="findAllUserId" resultType="java.lang.String">
+        select id from user where status = 1
+    </select>
+</mapper>
